@@ -104,3 +104,35 @@ Not used: SomaliWeb v1 and Somali Wikipedia (share-alike licence question still 
 Correction to the estimate above: OPUS Infopankki yielded far fewer usable pairs than expected,
 because most of its sentences repeat across page versions. Actual counts are in
 `final/v1.0/DATACARD.md`.
+
+## E. Question–answer and instruction candidates (inspected 2026-11-15)
+
+Rule applied: human-written Somali, licence that allows commercial use.
+
+| Dataset | Licence | Content | Decision |
+|---|---|---|---|
+| `CohereLabs/aya_dataset`, Somali rows | Apache-2.0 | 7,704 prompt/answer rows written by 77 volunteer annotators (3,734 original, 3,970 re-annotated); 3,695 unique questions | **USED** — the only human-written source with a clear commercial licence. After cleaning: 1,115 training-ready pairs, 1,036 held for expert review (religion, health). |
+| `CohereLabs/aya_collection_language_split`, `somali` | Apache-2.0 | 3,582,111 machine-translated task rows | **NOT USED** — machine translation; errors visible in samples. |
+| `akoksal/muri-it-language-split`, `som` | Apache-2.0 | Instructions produced by a model and machine-translated, attached to web and Wikipedia text | **NOT USED** — instructions are not human-written; underlying text has mixed licences. |
+| `Zyroxx66/Somali-Reasoning-Dataset`, `Zyroxx66/Somali-Somlish-Instruct-2K-Dataset` | Apache-2.0 | Synthetic and translated instruction data, partly mixed Somali–English | **NOT USED** — synthetic, no human review recorded. |
+| `yacdev/somali-100k-native-conversations` and related | Apache-2.0 | Synthetic multi-turn dialogues | **NOT USED** — template-like wording; needs editor review first. |
+| `saillab/alpaca-somali-cleaned`, `burtugeey/*alpaca*` | none stated | Machine translation of Alpaca | **NOT USED** — no licence stated; the original Alpaca data is non-commercial. |
+| `alexandrainst/multi-wiki-qa` | CC-BY-NC-SA-4.0 | Model-generated questions on Wikipedia | **NOT USED** — non-commercial. |
+| `Atnafu/Afri-MCQA` | CC-BY-NC-4.0 | Cultural multiple-choice benchmark | **NOT USED** — non-commercial; it is an evaluation set. |
+| `unkadlabs/qor-af-soomaali` | CC-BY-SA-4.0 | Community-written, validated Somali sentences | **NOT USED** — share-alike; same open question as SomaliWeb v1. Worth revisiting after the legal decision. |
+| `bltlab/lr-sum`, `som` | CC-BY-4.0 | News summarisation, test split only | **NOT USED** — evaluation data, and not question–answer. |
+| `engabdalla/somali-qa`, `planwise-data/somali-stem-dataset` | CC-BY-4.0 | Empty repository; 100-row terminology sample | **NOT USED** — no usable content. |
+
+## F. Revisions downloaded for v1.0 (2026-11-15)
+
+| Dataset | Revision |
+|---|---|
+| `HuggingFaceFW/fineweb-2` | `af9c13333eb9` |
+| `HPLT/HPLT2.0_cleaned` | `d1324a5283f7` |
+| `allenai/MADLAD-400` | `9d886a76bd8f` |
+| `HuggingFaceFW/finepdfs` | `220bac3acbf0` |
+| `Helsinki-NLP/opus_infopankki` | `52339513e7ee` |
+| `google/smol` | `fdaff3a1a019` |
+| `CohereLabs/aya_dataset` | `f9ea04583f02` |
+| `facebook/belebele` | `7899cdfa4e1e` |
+| OPUS NLLB v1 `en-so.txt.zip` | SHA-256 begins `95c2f2f9e0dc4a42` |

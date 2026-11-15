@@ -13,24 +13,42 @@
    "invalid": 0
   }
  },
+ "qa": {
+  "train": {
+   "records": 1067,
+   "invalid": 0
+  },
+  "validation": {
+   "records": 22,
+   "invalid": 0
+  },
+  "test": {
+   "records": 26,
+   "invalid": 0
+  },
+  "needs_review": {
+   "records": 1036,
+   "invalid": 0
+  }
+ },
  "raw_text": {
   "train": {
-   "files": 30,
-   "records": 1536750,
+   "files": 28,
+   "records": 1444653,
    "invalid": 0,
-   "largest_file_mb": 39.0
+   "largest_file_mb": 39.1
   },
   "validation": {
    "files": 1,
-   "records": 32022,
+   "records": 30121,
    "invalid": 0,
-   "largest_file_mb": 25.5
+   "largest_file_mb": 22.3
   },
   "test": {
    "files": 1,
-   "records": 32215,
+   "records": 30276,
    "invalid": 0,
-   "largest_file_mb": 23.8
+   "largest_file_mb": 21.9
   }
  },
  "errors": []

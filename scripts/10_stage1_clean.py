@@ -1,7 +1,12 @@
 """Raw text, steps 3.1-3.4 (+ dedup keys). One output shard per task, two workers.
 
-Usage: python3 -I 10_stage1_clean.py <raw_dir> <work_dir> <glotlid_model>
+Usage: python3 -I 10_stage1_clean.py <raw_dir> <work_dir> <glotlid_model> [only_source]
 Reads raw/ (never modifies it) and writes work/stage1/*.parquet + stage1_stats.json
+With only_source, just that source is re-processed and merged into the existing statistics.
+
+MADLAD-400 stores line breaks as the two characters backslash + n (and tabs as backslash + t).
+They are converted to real line breaks on read; otherwise the text is wrong and duplicate
+detection against the other sources fails.
 """
 import glob
 import gzip
@@ -19,6 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ops import op1_normalize, op2_apostrophes, op3_language, op4_length_quality, op5_dedup  # noqa: E402
 
 RAW, WORK, MODEL = sys.argv[1], sys.argv[2], sys.argv[3]
+ONLY = sys.argv[4] if len(sys.argv) > 4 else None
 OUT = os.path.join(WORK, "stage1")
 LICENSE = {"fineweb2": "odc-by-1.0", "madlad400": "odc-by-1.0", "hplt2": "cc0-1.0", "finepdfs": "odc-by-1.0"}
 SCHEMA = pa.schema([("text", pa.string()), ("source", pa.string()), ("url", pa.string()),
@@ -61,7 +67,10 @@ def records(kind, path, groups, urlcol):
                         r = json.loads(ln)
                     except Exception:
                         continue
-                    yield r.get("text"), r.get("url")
+                    text = r.get("text")
+                    if isinstance(text, str):
+                        text = text.replace("\\n", "\n").replace("\\t", " ")
+                    yield text, r.get("url")
 
 
 def init():
@@ -142,7 +151,7 @@ def run(task):
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    ts = tasks()
+    ts = [t for t in tasks() if ONLY is None or t[1] == ONLY]
     print("tasks:", len(ts), flush=True)
     t0 = time.time()
     stats, removed_all = {}, {}
@@ -154,9 +163,17 @@ if __name__ == "__main__":
             for k, v in removed.items():
                 removed_all.setdefault(k, []).extend(v)
             print(f"done {tid:03d} {source} in={c['in']} out={c['out']} t={time.time()-t0:.0f}s", flush=True)
-    json.dump(stats, open(os.path.join(WORK, "stage1_stats.json"), "w"), indent=1)
+    stats_path = os.path.join(WORK, "stage1_stats.json")
+    if ONLY and os.path.exists(stats_path):
+        old = json.load(open(stats_path))
+        old.update(stats)
+        stats = old
+    json.dump(stats, open(stats_path, "w"), indent=1)
     rnd = random.Random(0)
     for k, v in removed_all.items():
+        path = os.path.join(WORK, f"removed_{k}.jsonl")
+        if ONLY and os.path.exists(path):   # keep the other sources' samples
+            v = v + [x for x in map(json.loads, open(path, encoding="utf-8")) if x["source"] != ONLY]
         rnd.shuffle(v)
         with open(os.path.join(WORK, f"removed_{k}.jsonl"), "w", encoding="utf-8") as f:
             for item in v[:100]:

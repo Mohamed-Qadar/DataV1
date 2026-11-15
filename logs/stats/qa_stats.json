@@ -1,0 +1,30 @@
+{
+ "in_somali_rows": 7704,
+ "annotators": 77,
+ "rm_not_a_question": 1276,
+ "rm_empty": 5,
+ "question_rows": 6423,
+ "unique_questions": 3695,
+ "spelling_vocabulary_words": 312710,
+ "rm_duplicate_question": 2728,
+ "pii_masked": 0,
+ "rm_title_case_answer": 465,
+ "rm_conflicting_answers": 204,
+ "rm_answer_not_somali": 70,
+ "rm_poor_spelling": 243,
+ "rm_long_answer": 515,
+ "rm_url": 6,
+ "rm_all_caps": 14,
+ "rm_question_not_somali": 27,
+ "final_training_ready": 1115,
+ "by_split": {
+  "train": 1067,
+  "validation": 22,
+  "test": 26
+ },
+ "needs_review": {
+  "religion": 883,
+  "health": 153
+ },
+ "answer_words_median": 9
+}

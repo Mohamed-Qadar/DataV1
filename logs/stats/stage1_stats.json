@@ -15,13 +15,13 @@
   "in": 212235,
   "rm_empty": 0,
   "rm_encoding": 392,
-  "chg_normalize": 13724,
-  "chg_apostrophe": 105287,
-  "rm_language": 218,
-  "rm_short": 28,
-  "rm_noise": 1129,
-  "out": 210468,
-  "words_out": 104074690
+  "chg_normalize": 15083,
+  "chg_apostrophe": 105288,
+  "rm_language": 206,
+  "rm_short": 15,
+  "rm_noise": 1148,
+  "out": 210474,
+  "words_out": 107536333
  },
  "hplt2": {
   "in": 966507,
