@@ -1,55 +1,129 @@
 # Somali AI — DataV1
 
-Training-ready Somali data, version 1.0 (built 2026-11-15).
+**A cleaned, licence-checked Somali dataset for training a Somali language model.**
+It combines eight public datasets into three training-ready sets: raw Somali text, Somali↔English
+translation examples, and human-written question–answer pairs.
 
-| Folder | Content |
+Version 1.0 · built 2026-11-15 · Standard Somali (Latin script)
+
+## At a glance
+
+| Set | What it teaches a model | Size | Format |
+|---|---|---|---|
+| [`raw_text`](final/v1.0/raw_text) | To read and write fluent Somali | 1,505,050 documents · 520 million words · about 1.36 billion tokens | Parquet |
+| [`translation`](final/v1.0/translation) | To translate between Somali and English | 50,000 examples | JSONL chat `messages` |
+| [`qa`](final/v1.0/qa) | To answer questions in Somali | 1,115 pairs (+ 1,036 held for expert review) | JSONL chat `messages` |
+
+Every record carries its `source` and `license`. Each set is split into train / validation / test
+(96% / 2% / 2%). Total size: about 1.1 GB.
+
+## How it was built
+
+```mermaid
+flowchart LR
+    S[8 public datasets] --> W[Web text and PDFs<br/>2.27M documents]
+    S --> P[Parallel sentences<br/>10.3M pairs]
+    S --> Q[Volunteer questions and answers<br/>7,704 rows]
+    W --> W1[Repair encoding<br/>Keep Somali only<br/>Drop short and noisy text] --> W2[Remove duplicates<br/>Mask e-mails and phones] --> R[(raw_text<br/>1.5M documents)]
+    P --> P1[Filter and deduplicate] --> P2[Check alignment<br/>with LaBSE] --> T[(translation<br/>50,000 examples)]
+    Q --> Q1[Keep real questions<br/>Drop conflicts and poor spelling] --> Q2[Set aside religion<br/>and health for review] --> A[(qa<br/>1,115 pairs)]
+```
+
+No website was scraped and no data was generated with an AI model. The text was not rewritten:
+the pipeline only removed records and made mechanical repairs. Counts for every step are in the
+[DATACARD](final/v1.0/DATACARD.md).
+
+## What a record looks like
+
+**`raw_text`** — one web page or document per row.
+
+| Field | Example |
 |---|---|
-| `final/v1.0/raw_text/` | Cleaned, deduplicated Somali text for language training. Parquet shards with `id`, `text`, `source`, `license`. Splits: `train-*`, `validation-*`, `test-*`. |
-| `final/v1.0/translation/` | Somali↔English translation instructions in chat `messages` format. |
-| `final/v1.0/qa/` | Human-written Somali question–answer pairs in chat `messages` format. `needs_review.jsonl` holds religion and health questions that must be checked by an expert before use. |
-| `final/v1.0/DATACARD.md` | Counts for every cleaning step, licence distribution, known limitations. Read this first. |
-| `processed/parallel_pairs_clean.jsonl` | Every parallel pair that passed cleaning, with its LaBSE score. |
-| `test_quarantine/` | Test sets. Never use these for training. |
-| `licenses/` | `SOURCES.md` (every dataset inspected and the decision) and `ATTRIBUTION.md` (required credits). |
-| `logs/` | Up to 100 random examples of what each cleaning step removed, and the raw statistics. |
-| `scripts/` | The pipeline that produced this version. |
+| `id` | `so-raw-0000001` |
+| `text` | the full cleaned document |
+| `source` | `fineweb2`, `hplt2`, `madlad400` or `finepdfs` |
+| `license` | `odc-by-1.0` or `cc0-1.0` |
 
-## Data provenance declaration
+**`translation`** — one instruction and its answer.
 
-All data in this repository was taken from the public datasets listed below, downloaded on
-2026-11-15. This project scraped no website, generated no data with an AI model, and used no
-private or unpublished source. The only text written for this project is the set of 16 short
-Somali instruction templates ("Turjum af Ingiriisi: …") in the translation set, which an AI
-model wrote.
+```json
+{"id": "so-tr-0041929",
+ "messages": [
+   {"role": "user", "content": "Turjum af Soomaali: In the winter you need to dress warmly."},
+   {"role": "assistant", "content": "Wakhtiga jiilaalka waxa muhiimad gaar ah leh in uu qofku si dugsoon u labisto."}],
+ "source": "infopankki", "category": "translation", "language": "so-en", "license": "cc-by-4.0"}
+```
 
-The source datasets themselves are not free of machine-made text: web pages and NLLB sentence
-pairs include machine-translated Somali. That is why NLLB is never used as a Somali answer.
+**`qa`** — one question and its answer.
 
-Each record names its origin in the `source` field and its licence in the `license` field.
+```json
+{"id": "so-qa-0000874",
+ "messages": [
+   {"role": "user", "content": "Soomaliya imisa Webi ayaa ku taalo?"},
+   {"role": "assistant", "content": "Soomaaliya waxa ku taalo labo Webi Oo Kala Ah:-\n1. Webiga Jubba\n2. Webiga Shabeele"}],
+ "source": "aya", "category": "qa_general", "language": "so", "license": "apache-2.0"}
+```
 
-### Sources used
+The instruction sets store plain `messages`. The chat template of the base model is applied by
+the training framework and is not stored in the data.
 
-| `source` | Dataset and publisher | Where the text originally comes from | Licence | Downloaded from (revision) | In this version |
-|---|---|---|---|---|---|
-| `fineweb2` | FineWeb-2, Somali subset `som_Latn` — Hugging Face | Public web pages collected by Common Crawl, 2013–2024 | ODC-BY 1.0 | https://huggingface.co/datasets/HuggingFaceFW/fineweb-2 (`af9c13333eb9`) | 872,360 documents in `raw_text/` |
-| `hplt2` | HPLT v2 cleaned, `som_Latn` — HPLT project | Public web pages, mostly from the Internet Archive, some from Common Crawl | CC0 1.0 | https://huggingface.co/datasets/HPLT/HPLT2.0_cleaned (`d1324a5283f7`) | 422,725 documents in `raw_text/` |
-| `madlad400` | MADLAD-400 v1.5, Somali clean split — Google, hosted by Allen AI | Public web pages collected by Common Crawl up to August 2022 | ODC-BY 1.0 | https://huggingface.co/datasets/allenai/MADLAD-400 (`9d886a76bd8f`) | 189,598 documents in `raw_text/` |
-| `finepdfs` | FinePDFs, `som_Latn` — Hugging Face | Public PDF documents found by Common Crawl, 2013–2025, and re-fetched from the web (for example government, NGO and school documents) | ODC-BY 1.0 | https://huggingface.co/datasets/HuggingFaceFW/finepdfs (`220bac3acbf0`) | 20,367 documents in `raw_text/` |
-| `nllb` | NLLB v1 mined bitext, English–Somali — Meta AI, distributed by OPUS | Sentence pairs matched automatically from Common Crawl and ParaCrawl web text | ODC-BY 1.0 | https://object.pouta.csc.fi/OPUS-NLLB/v1/moses/en-so.txt.zip (SHA-256 `95c2f2f9e0dc4a42…`) | 28,138 examples in `translation/`, Somali→English only |
-| `infopankki` | OPUS Infopankki v1, English–Somali — City of Helsinki, distributed by OPUS | Human translations of infopankki.fi, a public information site for immigrants in Finland | CC-BY 4.0 | https://huggingface.co/datasets/Helsinki-NLP/opus_infopankki (`52339513e7ee`) | 9,752 pairs, used in both directions (19,504 examples) in `translation/` |
-| `smol` | SMOL (SmolSent, SmolDoc), English→Somali — Google | English texts translated into Somali by professional translators | CC-BY 4.0 | https://huggingface.co/datasets/google/smol (`fdaff3a1a019`) | 1,179 pairs, used in both directions (2,358 examples) in `translation/` |
-| `aya` | Aya Dataset, Somali rows — Cohere Labs and the Aya open-science community | Questions and answers written by 77 volunteer Somali speakers on the Aya Annotation Platform | Apache 2.0 | https://huggingface.co/datasets/CohereLabs/aya_dataset (`f9ea04583f02`) | 1,115 pairs in `qa/` + 1,036 in `qa/needs_review.jsonl` |
-| — (test only) | Belebele, `som_Latn` — Meta AI | Reading-comprehension questions on FLORES-200 passages | CC-BY-SA 4.0 | https://huggingface.co/datasets/facebook/belebele (`7899cdfa4e1e`) | 900 questions in `test_quarantine/` |
+## Quick start
 
-### What was done to the data
+```python
+from datasets import load_dataset
 
-Text was not rewritten. The pipeline only removed records and made mechanical repairs:
-encoding repair, Unicode normalisation, one apostrophe character, removal of "Su'aal:" / "Jawaab:"
-labels, language filtering, removal of
-short and noisy documents, duplicate removal, masking of e-mail addresses and phone numbers, and
-removal of misaligned translation pairs. Exact counts per step are in `final/v1.0/DATACARD.md`.
+raw = load_dataset("parquet", data_files={
+    "train": "final/v1.0/raw_text/train-*.parquet",
+    "validation": "final/v1.0/raw_text/validation-*.parquet",
+    "test": "final/v1.0/raw_text/test-*.parquet"})
 
-### Inspected and deliberately not used
+translation = load_dataset("json", data_files={
+    "train": "final/v1.0/translation/train.jsonl",
+    "validation": "final/v1.0/translation/validation.jsonl",
+    "test": "final/v1.0/translation/test.jsonl"})
+
+qa = load_dataset("json", data_files={
+    "train": "final/v1.0/qa/train.jsonl",
+    "validation": "final/v1.0/qa/validation.jsonl",
+    "test": "final/v1.0/qa/test.jsonl"})
+```
+
+## Repository map
+
+| Path | Content |
+|---|---|
+| `final/v1.0/` | The three training-ready sets and the [DATACARD](final/v1.0/DATACARD.md) |
+| `final/v1.0/qa/needs_review.jsonl` | Religion and health questions. Not training data until an expert approves them |
+| `processed/` | Every translation pair that passed cleaning, with its alignment score |
+| `test_quarantine/` | Evaluation data (Belebele). Never train on it |
+| `licenses/` | [SOURCES.md](licenses/SOURCES.md): every dataset inspected and the decision. [ATTRIBUTION.md](licenses/ATTRIBUTION.md): required credits |
+| `logs/` | Up to 100 random examples of what each cleaning step removed, plus the raw statistics |
+| `scripts/` | The pipeline that produced this version |
+
+## Where the data comes from
+
+All data was taken from the public datasets below, downloaded on 2026-11-15.
+
+| `source` | Dataset and publisher | Where the text originally comes from | Licence | In this version |
+|---|---|---|---|---|
+| `fineweb2` | [FineWeb-2](https://huggingface.co/datasets/HuggingFaceFW/fineweb-2), `som_Latn` — Hugging Face | Public web pages collected by Common Crawl, 2013–2024 | ODC-BY 1.0 | 872,360 documents |
+| `hplt2` | [HPLT v2 cleaned](https://huggingface.co/datasets/HPLT/HPLT2.0_cleaned), `som_Latn` — HPLT project | Public web pages, mostly from the Internet Archive, some from Common Crawl | CC0 1.0 | 422,725 documents |
+| `madlad400` | [MADLAD-400](https://huggingface.co/datasets/allenai/MADLAD-400) v1.5 clean, `so` — Google, hosted by Allen AI | Public web pages collected by Common Crawl up to August 2022 | ODC-BY 1.0 | 189,598 documents |
+| `finepdfs` | [FinePDFs](https://huggingface.co/datasets/HuggingFaceFW/finepdfs), `som_Latn` — Hugging Face | Public PDF documents found by Common Crawl, 2013–2025 (for example government, NGO and school documents) | ODC-BY 1.0 | 20,367 documents |
+| `nllb` | [NLLB v1 mined bitext](https://opus.nlpl.eu/legacy/NLLB-v1.php), English–Somali — Meta AI, distributed by OPUS | Sentence pairs matched automatically from Common Crawl and ParaCrawl web text | ODC-BY 1.0 | 28,138 examples, Somali→English only |
+| `infopankki` | [OPUS Infopankki](https://huggingface.co/datasets/Helsinki-NLP/opus_infopankki) v1, English–Somali — City of Helsinki, distributed by OPUS | Human translations of infopankki.fi, a public information site for immigrants in Finland | CC-BY 4.0 | 9,752 pairs, both directions |
+| `smol` | [SMOL](https://huggingface.co/datasets/google/smol) (SmolSent, SmolDoc), English→Somali — Google | English texts translated into Somali by professional translators | CC-BY 4.0 | 1,179 pairs, both directions |
+| `aya` | [Aya Dataset](https://huggingface.co/datasets/CohereLabs/aya_dataset), Somali rows — Cohere Labs and the Aya open-science community | Questions and answers written by 77 volunteer Somali speakers | Apache 2.0 | 1,115 pairs + 1,036 held for review |
+| test only | [Belebele](https://huggingface.co/datasets/facebook/belebele), `som_Latn` — Meta AI | Reading-comprehension questions on FLORES-200 passages | CC-BY-SA 4.0 | 900 questions in `test_quarantine/` |
+
+The only text written for this project is a set of 16 short Somali instruction templates in the
+translation set (for example "Turjum af Ingiriisi: …"). An AI model wrote them and a native
+speaker should check them.
+
+The exact dataset revisions are recorded in [SOURCES.md](licenses/SOURCES.md).
+
+<details>
+<summary><b>Datasets inspected and deliberately not used</b></summary>
 
 | Dataset | Reason |
 |---|---|
@@ -62,39 +136,33 @@ removal of misaligned translation pairs. Exact counts per step are in `final/v1.
 | Multi-Wiki-QA, Afri-MCQA | Non-commercial licence. |
 | `unkadlabs/qor-af-soomaali` | Share-alike licence (CC-BY-SA). |
 
-Full inspection results are in `licenses/SOURCES.md`.
+</details>
 
-### Limits of this declaration
+## Read this before training
 
-The licences above are those stated by each dataset's publisher for the compilation. The web
-datasets contain text written by many third parties, and the dataset licences do not settle the
-rights in those original pages. Get legal review before training a commercial model.
+1. **No human editor has reviewed this version.** Quality rests on automatic filters and samples.
+2. **Licences were checked at dataset level only.** The web datasets contain text written by many
+   third parties, and a dataset licence does not settle the rights in those pages. Get legal
+   review before training a commercial model.
+3. **The question–answer set is small and not fact-checked.** Answers were written by volunteers;
+   spelling and accuracy are uneven. It is far below the 100,000-example goal.
+4. **Machine-translated Somali exists in the sources.** Some web pages and many NLLB sentences were
+   machine-translated. NLLB is therefore used only as Somali→English, never as a Somali answer.
+5. **Personal data masking is limited** to e-mail addresses and phone numbers. Names and addresses
+   are not masked, and no toxicity filter was applied.
+6. **Standard Somali only.** Af-Maay text is removed by the language filter.
 
-## Load
+The full list is in section 6 of the [DATACARD](final/v1.0/DATACARD.md).
 
-```python
-from datasets import load_dataset
+## What comes next
 
-raw = load_dataset("parquet", data_files={
-    "train": "final/v1.0/raw_text/train-*.parquet",
-    "validation": "final/v1.0/raw_text/validation-*.parquet",
-    "test": "final/v1.0/raw_text/test-*.parquet"})
+1. Editor review of the question–answer set, and expert review of `needs_review.jsonl`.
+2. More instruction data: editor-written and document-based question–answer pairs, multi-turn chat.
+3. A legal decision on the share-alike sources (SomaliWeb v1, Wikipedia).
+4. FLORES+ in `test_quarantine/` and a repeat of the test-leakage check.
 
-tr = load_dataset("json", data_files={
-    "train": "final/v1.0/translation/train.jsonl",
-    "validation": "final/v1.0/translation/validation.jsonl",
-    "test": "final/v1.0/translation/test.jsonl"})
-
-qa = load_dataset("json", data_files={
-    "train": "final/v1.0/qa/train.jsonl",
-    "validation": "final/v1.0/qa/validation.jsonl",
-    "test": "final/v1.0/qa/test.jsonl"})
-```
-
-The instruction records hold plain `messages`. The chat template of the base model is applied
-by the training framework, not stored in the data.
-
-## Rebuild
+<details>
+<summary><b>Rebuild from the sources</b></summary>
 
 ```
 python3 scripts/00_download.py raw test_quarantine
@@ -108,12 +176,13 @@ python3 scripts/40_validate.py . work
 python3 scripts/50_datacard.py work .
 ```
 
-Needs: `datasets huggingface_hub pyarrow ftfy xxhash fasttext sentence-transformers`, the GlotLID
+Needs `datasets huggingface_hub pyarrow ftfy xxhash fasttext sentence-transformers`, the GlotLID
 model (`cis-lmu/glotlid`, `model.bin`) and LaBSE (`sentence-transformers/LaBSE`). The raw downloads
 (about 3.9 GB) are not stored in this repository.
 
-## Before using this for a commercial model
+</details>
 
-Read section 6 of the DATACARD. In short: licences were checked at dataset level only, no human
-editor has reviewed the text, the question–answer set is small and not fact-checked, and there is
-no multi-turn chat data yet.
+## Licence and credits
+
+The data keeps the licences of its sources: ODC-BY 1.0, CC0 1.0, CC-BY 4.0 and Apache 2.0, shown
+per record in the `license` field. Required credits are in [ATTRIBUTION.md](licenses/ATTRIBUTION.md).

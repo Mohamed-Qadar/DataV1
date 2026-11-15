@@ -122,3 +122,17 @@ Rule applied: human-written Somali, licence that allows commercial use.
 | `unkadlabs/qor-af-soomaali` | CC-BY-SA-4.0 | Community-written, validated Somali sentences | **NOT USED** — share-alike; same open question as SomaliWeb v1. Worth revisiting after the legal decision. |
 | `bltlab/lr-sum`, `som` | CC-BY-4.0 | News summarisation, test split only | **NOT USED** — evaluation data, and not question–answer. |
 | `engabdalla/somali-qa`, `planwise-data/somali-stem-dataset` | CC-BY-4.0 | Empty repository; 100-row terminology sample | **NOT USED** — no usable content. |
+
+## F. Revisions downloaded for v1.0 (2026-11-15)
+
+| Dataset | Revision |
+|---|---|
+| `HuggingFaceFW/fineweb-2` | `af9c13333eb9` |
+| `HPLT/HPLT2.0_cleaned` | `d1324a5283f7` |
+| `allenai/MADLAD-400` | `9d886a76bd8f` |
+| `HuggingFaceFW/finepdfs` | `220bac3acbf0` |
+| `Helsinki-NLP/opus_infopankki` | `52339513e7ee` |
+| `google/smol` | `fdaff3a1a019` |
+| `CohereLabs/aya_dataset` | `f9ea04583f02` |
+| `facebook/belebele` | `7899cdfa4e1e` |
+| OPUS NLLB v1 `en-so.txt.zip` | SHA-256 begins `95c2f2f9e0dc4a42` |
