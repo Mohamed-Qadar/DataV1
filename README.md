@@ -1,8 +1,9 @@
 # Somali AI — DataV1
 
-**A cleaned, licence-checked Somali dataset for training a Somali language model.**
-It combines eight public datasets into three training-ready sets: raw Somali text, Somali↔English
-translation examples, and human-written question–answer pairs.
+**One clean, deduplicated Somali dataset, ready for training a Somali language model.**
+Somali text is scattered across large multilingual collections that overlap, repeat themselves
+and carry errors. This project merges eight of them into three training-ready sets: raw Somali
+text, Somali↔English translation examples, and human-written question–answer pairs.
 
 Version 1.0 · built 2026-11-15 · Standard Somali (Latin script)
 
@@ -16,6 +17,38 @@ Version 1.0 · built 2026-11-15 · Standard Somali (Latin script)
 
 Every record carries its `source` and `license`. Each set is split into train / validation / test
 (96% / 2% / 2%). Total size: about 1.1 GB.
+
+## What this project adds
+
+The text itself comes from public datasets. The contribution is the work that turns them into
+data a model can be trained on.
+
+1. **One corpus instead of four overlapping ones.** FineWeb-2, HPLT v2, MADLAD-400 and FinePDFs
+   were merged and deduplicated against each other. 707,977 duplicate documents were removed, 32%
+   of the cleaned input. What remains is 1,505,050 documents and 520 million words. For scale,
+   SomaliWeb v1 has 819,322 documents and 233 million words.
+2. **Cleaning made for Somali.** Apostrophes, which are letters in Somali spelling (*su'aal*,
+   *go'aan*), were unified to one character in 1,020,756 documents. A language identifier
+   that handles Somali well removed 22,314 non-Somali documents. Another 32,970 noisy or spam
+   documents were dropped, and e-mail addresses and phone numbers were masked in 138,572 documents.
+3. **Defects found in the sources and fixed.** HPLT v2 "cleaned" contains 162,094 exact repeats of
+   its own documents. MADLAD-400 stores line breaks as literal `\n`; on pages that it
+   shares with FineWeb-2, duplicate detection caught 16% before the fix and 70% after.
+4. **A translation set built to protect Somali quality.** Two measurements shaped it. The usual
+   alignment model (LaBSE) scores correct professional Somali translations low, so one threshold
+   would discard a third of the human translations. And NLLB pairs, which are matched
+   automatically, are noisy: 60% of a 90,000-pair sample failed the alignment check, and many of
+   the Somali sentences that passed read as machine translation. The set therefore uses human
+   translations in both directions and NLLB only as Somali→English.
+5. **A question–answer set that is sorted, not just copied.** Of 3,695 unique volunteer-written
+   questions, 1,115 passed the checks for conflicting answers and spelling. Another 1,036 on
+   religion and health are held back for expert review instead of being trained on blindly.
+6. **Ready for training, and checkable.** One schema, plain chat `messages`, fixed
+   train / validation / test splits, every record validated, and a guard that keeps test-set text
+   out of the training data. The pipeline and samples of everything it removed are in this
+   repository, so every number above can be reproduced.
+7. **A measurement for model choice.** The Qwen3 tokenizer needs 2.62 tokens per Somali word on
+   this corpus.
 
 ## How it was built
 
