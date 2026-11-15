@@ -43,7 +43,8 @@ TO_EN = ["Turjum af Ingiriisi: {t}",
          "Ii turjum qoraalkan, kuna qor af Ingiriisi:\n{t}",
          "Waa maxay turjumaadda af Ingiriisi ee jumladan? {t}",
          "{t}\n\nKan af Ingiriisi iigu turjum."]
-TO_SO = [s.replace("af Ingiriisi", "af Soomaali") for s in TO_EN]
+TO_SO = [s.replace("af Ingiriisi", "af Soomaali").replace("Af Ingiriisi", "Af Soomaali") for s in TO_EN]
+assert not any("Ingiriisi" in s for s in TO_SO), "a Somali-target template still names English"
 PARAGRAPH_OK = (1, 4, 5, 7)   # templates that also fit multi-sentence text
 
 _WORD = re.compile(r"[A-Za-z]{4,}")
