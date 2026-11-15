@@ -1,0 +1,116 @@
+# DATACARD — Somali AI dataset v1.0
+
+Built 2026-11-15. Training-ready Somali data in two sets: raw text for language training and translation instructions for instruction training. Every record carries its source and licence.
+
+## 1. What is in this version
+
+| Set | Format | Records | Words | Files | Size |
+|---|---|---:|---:|---:|---:|
+| `raw_text/` | Parquet (`id`, `text`, `source`, `license`) | 1,600,987 | 559,700,835 | 32 | 1.18 GB |
+| `translation/` | JSONL chat `messages` | 50,000 | — | 3 | 23.9 MB |
+
+Token estimate for `raw_text/`: about 1,456,406,443 tokens with the `Qwen/Qwen3-8B` tokenizer (2.60 tokens per word, measured on 2,000 random documents).
+
+### Splits (96% / 2% / 2%, assigned by a hash of the record id)
+
+| Split | Raw text docs | Raw text words | Raw text files | Translation records |
+|---|---:|---:|---:|---:|
+| train | 1,536,750 | 536,360,738 | 30 | 47,979 |
+| validation | 32,022 | 12,125,774 | 1 | 1,014 |
+| test | 32,215 | 11,214,323 | 1 | 1,007 |
+
+## 2. Raw text: what each cleaning step removed
+
+| Step | FineWeb-2 (som_Latn) | HPLT v2 cleaned (som_Latn) | MADLAD-400 v1.5 clean (so) | FinePDFs (som_Latn) | Total |
+|---|---:|---:|---:|---:|---:|
+| Records read | 1,070,384 | 966,507 | 212,235 | 21,781 | 2,270,907 |
+| Removed: empty | 0 | 0 | 0 | 0 | 0 |
+| 3.1 Removed: unrepairable encoding | 134 | 213 | 392 | 0 | 739 |
+| 3.1 Changed by normalisation / ftfy (kept) | 19,935 | 11,633 | 13,724 | 12,210 | 57,502 |
+| 3.2 Apostrophes standardised (kept) | 451,167 | 461,413 | 105,287 | 2,888 | 1,020,755 |
+| 3.3 Removed: not Somali | 15,607 | 6,317 | 218 | 184 | 22,326 |
+| 3.4 Removed: under 50 words | 1,486 | 1 | 28 | 350 | 1,865 |
+| 3.4 Removed: noise / spam | 5,786 | 25,387 | 1,129 | 649 | 32,951 |
+| Left after steps 3.1–3.4 | 1,047,371 | 934,589 | 210,468 | 20,598 | 2,213,026 |
+| 3.5 Removed: exact duplicates | 5 | 375,323 | 6 | 1 | 375,335 |
+| 3.5 Removed: near duplicates (MinHash) | 105,644 | 120,502 | 10,354 | 198 | 236,698 |
+| Removed: contains test-set text | | | | | 0 |
+| Removed: under 50 words after PII masking | | | | | 6 |
+| **Final documents** | 941,718 | 438,764 | 200,107 | 20,398 | **1,600,987** |
+| Final words | 275,353,527 | 166,891,411 | 93,995,615 | 23,460,282 | 559,700,835 |
+
+Step 3.6 masked 183,158 e-mail addresses and 30,597 phone numbers in 148,385 documents (`[EMAIL]`, `[PHONE]`).
+
+Exact duplicates keep the first copy in the order FineWeb-2, FinePDFs, MADLAD-400, HPLT v2, so a page present in several sources is counted under the earlier one. Near duplicates keep the longest copy.
+
+### Licence distribution (raw text)
+
+| Licence | Documents | Words |
+|---|---:|---:|
+| cc0-1.0 | 438,764 | 166,891,411 |
+| odc-by-1.0 | 1,162,223 | 392,809,424 |
+
+## 3. Translation set: what each step removed
+
+| Step | Google SMOL (en-so) | OPUS Infopankki (en-so) | NLLB v1 mined (en-so) |
+|---|---:|---:|---:|
+| Pairs in source | 1,201 | 47,220 | 10,229,073 |
+| Below top 10% mining score (not processed) | — | — | 9,206,158 |
+| Removed: unrepairable encoding | 0 | 0 | 374 |
+| Removed: under 4 words | 2 | 8,607 | 49,274 |
+| Removed: over 80 words | 0 | 0 | 51 |
+| Removed: length ratio | 0 | 181 | 45,575 |
+| Removed: both sides identical | 0 | 248 | 12 |
+| Removed: URL or e-mail | 0 | 11 | 2,014 |
+| Removed: numbers differ | 2 | 647 | 54,757 |
+| Removed: noise | 0 | 355 | 8,411 |
+| Removed: spam | 1 | 9 | 3,645 |
+| Removed: Somali side not Somali | 1 | 206 | 48,003 |
+| Removed: English side not English | 1 | 1,637 | 2,111 |
+| Removed: duplicate | 0 | 24,450 | 326,480 |
+| Removed: test-set text | 0 | 0 | 2 |
+| Passed cheap filters | 1,194 | 10,869 | 482,206 |
+| Scored with LaBSE | 1,194 | 10,869 | 90,000 (random sample) |
+| 3.7 Removed: LaBSE similarity too low (human < 0.4, mined < 0.75) | 14 | 126 | 53,694 |
+| Removed: menu / link-label fragments | 1 | 991 | 0 |
+| Removed: Somali side copies English words (machine-translation sign) | — | — | 4,544 |
+| Passed all cleaning (kept in `processed/parallel_pairs_clean.jsonl`) | 1,179 | 9,752 | 31,762 |
+| **Pairs used in final set** | **1,179** | **9,752** | **28,138** |
+| Examples Somali→English | 1,179 | 9,752 | 28,138 |
+| Examples English→Somali | 1,179 | 9,752 | 0 |
+
+Final set: 50,000 examples built from 39,069 pairs (39,069 Somali→English, 10,931 English→Somali). Licences: cc-by-4.0 21,862, odc-by-1.0 28,138.
+
+Two decisions that differ from the original plan, both made to protect answer quality:
+
+1. **LaBSE threshold calibrated per source.** LaBSE scores correct professional Somali translations low (SMOL sentences: median 0.74, a quarter under 0.67), so a single 0.75 cut-off would have discarded about a third of the human translations. Human-translated sources keep pairs at 0.4 or above, which removes real misalignments only; mined NLLB pairs must reach 0.75 (lowest NLLB score in the final set: 0.7819).
+2. **Not half/half by direction.** Many NLLB Somali sentences are machine-translated web text. Using them as answers would teach the model unnatural Somali, so NLLB pairs are used Somali→English only. English→Somali examples come only from human translations, and each human pair is used in both directions (both directions of a pair always fall in the same split).
+
+NLLB reserve: 392,206 pairs passed the cheap filters but were not scored with LaBSE in this build (CPU-only run, about 90 minutes for 102,063 pairs). At the observed pass rate they would yield well over 100,000 more Somali→English pairs.
+
+## 4. Validation
+
+| Set | Split | Records | Invalid | Largest file |
+|---|---|---:|---:|---:|
+| raw_text | train | 1,536,750 | 0 | 39.0 MB |
+| raw_text | validation | 32,022 | 0 | 25.5 MB |
+| raw_text | test | 32,215 | 0 | 23.8 MB |
+| translation | train | 47,979 | 0 | — |
+| translation | validation | 1,014 | 0 | — |
+| translation | test | 1,007 | 0 | — |
+
+Checks: UTF-8 without BOM, required fields, unique ids, user/assistant order, no empty content, no chat-template tokens, allowed licences, no document under 50 words.
+
+## 5. Known limitations
+
+1. Not included pending a licence decision: SomaliWeb v1 (CC-BY-SA, partly CC100) and Somali Wikipedia (CC-BY-SA).
+2. Dataset licences cover the compilations, not the rights in the original web pages. Get legal review before commercial training.
+3. PII masking is regex only (e-mails, phone numbers). Names and addresses are not masked.
+4. No toxicity filter was applied. Web text can contain offensive or clan-related hate content.
+5. Machine-translated Somali web pages are still present in the raw text; only spam and structural noise were filtered.
+5b. Af-Maay text is removed by the language filter (it is identified as a different language). This version is Standard Somali only.
+6. NLLB pairs are automatically mined. LaBSE removes most mismatches but not all, and their Somali side is often machine-translated; they appear only as Somali→English examples. Review a sample before relying on them.
+7. The Somali instruction templates in the translation set were written by an AI model and should be checked by a native-speaker editor.
+8. The test-leakage guard used Belebele (FLORES-200 passages). FLORES+ itself is gated and was not downloaded; repeat the check once it is in `test_quarantine/`.
+9. This version has no question–answer or chat data. That is the next step.
+10. Quality was measured on samples and by automatic filters; no human editor has reviewed this version.

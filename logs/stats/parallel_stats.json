@@ -1,0 +1,103 @@
+{
+ "smol": {
+  "in": 1201,
+  "out": 1194,
+  "rm_spam": 1,
+  "rm_short": 2,
+  "rm_language_en": 1,
+  "rm_number_mismatch": 2,
+  "rm_language_so": 1,
+  "passed_all": 1179,
+  "rm_low_labse": 14,
+  "rm_menu_artifact": 1
+ },
+ "infopankki": {
+  "in": 47220,
+  "out": 10869,
+  "rm_short": 8607,
+  "rm_duplicate": 24450,
+  "rm_language_en": 1637,
+  "rm_language_so": 206,
+  "rm_number_mismatch": 647,
+  "rm_length_ratio": 181,
+  "rm_identical": 248,
+  "rm_noise": 355,
+  "rm_url_email": 11,
+  "rm_spam": 9,
+  "passed_all": 9752,
+  "rm_low_labse": 126,
+  "rm_menu_artifact": 991
+ },
+ "nllb": {
+  "in_total": 10229073,
+  "rm_below_top10pct_score": 9206158,
+  "in": 1022915,
+  "out": 482206,
+  "rm_duplicate": 326480,
+  "rm_number_mismatch": 54757,
+  "rm_language_so": 48003,
+  "rm_short": 49274,
+  "rm_length_ratio": 45575,
+  "rm_noise": 8411,
+  "rm_language_en": 2111,
+  "rm_identical": 12,
+  "rm_url_email": 2014,
+  "rm_encoding": 374,
+  "rm_spam": 3645,
+  "rm_long": 51,
+  "rm_test_leak": 2,
+  "passed_cheap_filters": 482206,
+  "sent_to_labse": 90000,
+  "not_scored_reserve": 392206,
+  "passed_all": 31762,
+  "rm_low_labse": 53694,
+  "rm_copied_english": 4544
+ },
+ "_thresholds": {
+  "human": 0.4,
+  "mined": 0.75
+ },
+ "_passed_total": 42693,
+ "_selected": {
+  "total": 50000,
+  "pairs_used": 39069,
+  "human_pairs": 10931,
+  "mined_pairs": 28138,
+  "by_source": {
+   "nllb": 28138,
+   "smol": 2358,
+   "infopankki": 19504
+  },
+  "by_direction": {
+   "so->en": 39069,
+   "en->so": 10931
+  },
+  "by_source_direction": {
+   "nllb": {
+    "so->en": 28138,
+    "en->so": 0
+   },
+   "smol": {
+    "so->en": 1179,
+    "en->so": 1179
+   },
+   "infopankki": {
+    "so->en": 9752,
+    "en->so": 9752
+   }
+  },
+  "by_license": {
+   "odc-by-1.0": 28138,
+   "cc-by-4.0": 21862
+  },
+  "by_split": {
+   "train": 47979,
+   "test": 1007,
+   "validation": 1014
+  },
+  "phones_masked": 60,
+  "labse_min_mined": 0.7819,
+  "labse_median_mined": 0.8739,
+  "labse_median_human": 0.8003
+ }
+}
