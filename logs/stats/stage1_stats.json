@@ -1,0 +1,50 @@
+{
+ "fineweb2": {
+  "in": 1070384,
+  "rm_empty": 0,
+  "rm_encoding": 134,
+  "chg_normalize": 19935,
+  "chg_apostrophe": 451167,
+  "rm_language": 15607,
+  "rm_short": 1486,
+  "rm_noise": 5786,
+  "out": 1047371,
+  "words_out": 318656303
+ },
+ "madlad400": {
+  "in": 212235,
+  "rm_empty": 0,
+  "rm_encoding": 392,
+  "chg_normalize": 13724,
+  "chg_apostrophe": 105287,
+  "rm_language": 218,
+  "rm_short": 28,
+  "rm_noise": 1129,
+  "out": 210468,
+  "words_out": 104074690
+ },
+ "hplt2": {
+  "in": 966507,
+  "rm_empty": 0,
+  "rm_encoding": 213,
+  "chg_normalize": 11633,
+  "chg_apostrophe": 461413,
+  "rm_language": 6317,
+  "rm_short": 1,
+  "rm_noise": 25387,
+  "out": 934589,
+  "words_out": 363482474
+ },
+ "finepdfs": {
+  "in": 21781,
+  "rm_empty": 0,
+  "rm_encoding": 0,
+  "chg_normalize": 12210,
+  "chg_apostrophe": 2888,
+  "rm_language": 184,
+  "rm_short": 350,
+  "rm_noise": 649,
+  "out": 20598,
+  "words_out": 23702370
+ }
+}

@@ -1,0 +1,68 @@
+{
+ "in": 2213026,
+ "rm_exact_dup": 375335,
+ "rm_near_dup": 236698,
+ "rm_test_leak": 0,
+ "rm_short_after_mask": 6,
+ "out": 1600987,
+ "pii_docs": 148385,
+ "emails_masked": 183158,
+ "phones_masked": 30597,
+ "by_source": {
+  "fineweb2": {
+   "docs": 941718,
+   "words": 275353527
+  },
+  "finepdfs": {
+   "docs": 20398,
+   "words": 23460282
+  },
+  "madlad400": {
+   "docs": 200107,
+   "words": 93995615
+  },
+  "hplt2": {
+   "docs": 438764,
+   "words": 166891411
+  }
+ },
+ "by_split": {
+  "train": {
+   "docs": 1536750,
+   "words": 536360738,
+   "files": 30
+  },
+  "validation": {
+   "docs": 32022,
+   "words": 12125774,
+   "files": 1
+  },
+  "test": {
+   "docs": 32215,
+   "words": 11214323,
+   "files": 1
+  }
+ },
+ "by_license": {
+  "odc-by-1.0": {
+   "docs": 1162223,
+   "words": 392809424
+  },
+  "cc0-1.0": {
+   "docs": 438764,
+   "words": 166891411
+  }
+ },
+ "exact_dup_by_source": {
+  "fineweb2": 5,
+  "finepdfs": 1,
+  "madlad400": 6,
+  "hplt2": 375323
+ },
+ "near_dup_by_source": {
+  "fineweb2": 105644,
+  "finepdfs": 198,
+  "madlad400": 10354,
+  "hplt2": 120502
+ }
+}

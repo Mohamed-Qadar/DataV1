@@ -1,0 +1,37 @@
+{
+ "translation": {
+  "train": {
+   "records": 47979,
+   "invalid": 0
+  },
+  "validation": {
+   "records": 1014,
+   "invalid": 0
+  },
+  "test": {
+   "records": 1007,
+   "invalid": 0
+  }
+ },
+ "raw_text": {
+  "train": {
+   "files": 30,
+   "records": 1536750,
+   "invalid": 0,
+   "largest_file_mb": 39.0
+  },
+  "validation": {
+   "files": 1,
+   "records": 32022,
+   "invalid": 0,
+   "largest_file_mb": 25.5
+  },
+  "test": {
+   "files": 1,
+   "records": 32215,
+   "invalid": 0,
+   "largest_file_mb": 23.8
+  }
+ },
+ "errors": []
+}
