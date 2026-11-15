@@ -6,18 +6,18 @@ Built 2026-11-15. Training-ready Somali data in two sets: raw text for language 
 
 | Set | Format | Records | Words | Files | Size |
 |---|---|---:|---:|---:|---:|
-| `raw_text/` | Parquet (`id`, `text`, `source`, `license`) | 1,600,987 | 559,700,835 | 32 | 1.18 GB |
+| `raw_text/` | Parquet (`id`, `text`, `source`, `license`) | 1,505,050 | 520,429,948 | 30 | 1.09 GB |
 | `translation/` | JSONL chat `messages` | 50,000 | — | 3 | 23.9 MB |
 
-Token estimate for `raw_text/`: about 1,456,406,443 tokens with the `Qwen/Qwen3-8B` tokenizer (2.60 tokens per word, measured on 2,000 random documents).
+Token estimate for `raw_text/`: about 1,363,459,117 tokens with the `Qwen/Qwen3-8B` tokenizer (2.62 tokens per word, measured on 2,000 random documents).
 
 ### Splits (96% / 2% / 2%, assigned by a hash of the record id)
 
 | Split | Raw text docs | Raw text words | Raw text files | Translation records |
 |---|---:|---:|---:|---:|
-| train | 1,536,750 | 536,360,738 | 30 | 47,979 |
-| validation | 32,022 | 12,125,774 | 1 | 1,014 |
-| test | 32,215 | 11,214,323 | 1 | 1,007 |
+| train | 1,444,653 | 499,553,778 | 28 | 47,979 |
+| validation | 30,121 | 10,542,693 | 1 | 1,014 |
+| test | 30,276 | 10,333,477 | 1 | 1,007 |
 
 ## 2. Raw text: what each cleaning step removed
 
@@ -26,20 +26,20 @@ Token estimate for `raw_text/`: about 1,456,406,443 tokens with the `Qwen/Qwen3-
 | Records read | 1,070,384 | 966,507 | 212,235 | 21,781 | 2,270,907 |
 | Removed: empty | 0 | 0 | 0 | 0 | 0 |
 | 3.1 Removed: unrepairable encoding | 134 | 213 | 392 | 0 | 739 |
-| 3.1 Changed by normalisation / ftfy (kept) | 19,935 | 11,633 | 13,724 | 12,210 | 57,502 |
-| 3.2 Apostrophes standardised (kept) | 451,167 | 461,413 | 105,287 | 2,888 | 1,020,755 |
-| 3.3 Removed: not Somali | 15,607 | 6,317 | 218 | 184 | 22,326 |
-| 3.4 Removed: under 50 words | 1,486 | 1 | 28 | 350 | 1,865 |
-| 3.4 Removed: noise / spam | 5,786 | 25,387 | 1,129 | 649 | 32,951 |
-| Left after steps 3.1–3.4 | 1,047,371 | 934,589 | 210,468 | 20,598 | 2,213,026 |
-| 3.5 Removed: exact duplicates | 5 | 375,323 | 6 | 1 | 375,335 |
-| 3.5 Removed: near duplicates (MinHash) | 105,644 | 120,502 | 10,354 | 198 | 236,698 |
+| 3.1 Changed by normalisation / ftfy (kept) | 19,935 | 11,633 | 15,083 | 12,210 | 58,861 |
+| 3.2 Apostrophes standardised (kept) | 451,167 | 461,413 | 105,288 | 2,888 | 1,020,756 |
+| 3.3 Removed: not Somali | 15,607 | 6,317 | 206 | 184 | 22,314 |
+| 3.4 Removed: under 50 words | 1,486 | 1 | 15 | 350 | 1,852 |
+| 3.4 Removed: noise / spam | 5,786 | 25,387 | 1,148 | 649 | 32,970 |
+| Left after steps 3.1–3.4 | 1,047,371 | 934,589 | 210,474 | 20,598 | 2,213,032 |
+| 3.5 Removed: exact duplicates | 5 | 375,423 | 509 | 1 | 375,938 |
+| 3.5 Removed: near duplicates (MinHash) | 175,002 | 136,441 | 20,367 | 229 | 332,039 |
 | Removed: contains test-set text | | | | | 0 |
-| Removed: under 50 words after PII masking | | | | | 6 |
-| **Final documents** | 941,718 | 438,764 | 200,107 | 20,398 | **1,600,987** |
-| Final words | 275,353,527 | 166,891,411 | 93,995,615 | 23,460,282 | 559,700,835 |
+| Removed: under 50 words after PII masking | | | | | 5 |
+| **Final documents** | 872,360 | 422,725 | 189,598 | 20,367 | **1,505,050** |
+| Final words | 247,064,709 | 159,209,728 | 90,729,437 | 23,426,074 | 520,429,948 |
 
-Step 3.6 masked 183,158 e-mail addresses and 30,597 phone numbers in 148,385 documents (`[EMAIL]`, `[PHONE]`).
+Step 3.6 masked 172,158 e-mail addresses and 29,795 phone numbers in 138,572 documents (`[EMAIL]`, `[PHONE]`).
 
 Exact duplicates keep the first copy in the order FineWeb-2, FinePDFs, MADLAD-400, HPLT v2, so a page present in several sources is counted under the earlier one. Near duplicates keep the longest copy.
 
@@ -47,8 +47,8 @@ Exact duplicates keep the first copy in the order FineWeb-2, FinePDFs, MADLAD-40
 
 | Licence | Documents | Words |
 |---|---:|---:|
-| cc0-1.0 | 438,764 | 166,891,411 |
-| odc-by-1.0 | 1,162,223 | 392,809,424 |
+| cc0-1.0 | 422,725 | 159,209,728 |
+| odc-by-1.0 | 1,082,325 | 361,220,220 |
 
 ## 3. Translation set: what each step removed
 
@@ -92,9 +92,9 @@ NLLB reserve: 392,206 pairs passed the cheap filters but were not scored with La
 
 | Set | Split | Records | Invalid | Largest file |
 |---|---|---:|---:|---:|
-| raw_text | train | 1,536,750 | 0 | 39.0 MB |
-| raw_text | validation | 32,022 | 0 | 25.5 MB |
-| raw_text | test | 32,215 | 0 | 23.8 MB |
+| raw_text | train | 1,444,653 | 0 | 39.1 MB |
+| raw_text | validation | 30,121 | 0 | 22.3 MB |
+| raw_text | test | 30,276 | 0 | 21.9 MB |
 | translation | train | 47,979 | 0 | — |
 | translation | validation | 1,014 | 0 | — |
 | translation | test | 1,007 | 0 | — |

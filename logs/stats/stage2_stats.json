@@ -1,68 +1,68 @@
 {
- "in": 2213026,
- "rm_exact_dup": 375335,
- "rm_near_dup": 236698,
+ "in": 2213032,
+ "rm_exact_dup": 375938,
+ "rm_near_dup": 332039,
  "rm_test_leak": 0,
- "rm_short_after_mask": 6,
- "out": 1600987,
- "pii_docs": 148385,
- "emails_masked": 183158,
- "phones_masked": 30597,
+ "rm_short_after_mask": 5,
+ "out": 1505050,
+ "pii_docs": 138572,
+ "emails_masked": 172158,
+ "phones_masked": 29795,
  "by_source": {
   "fineweb2": {
-   "docs": 941718,
-   "words": 275353527
+   "docs": 872360,
+   "words": 247064709
   },
   "finepdfs": {
-   "docs": 20398,
-   "words": 23460282
+   "docs": 20367,
+   "words": 23426074
   },
   "madlad400": {
-   "docs": 200107,
-   "words": 93995615
+   "docs": 189598,
+   "words": 90729437
   },
   "hplt2": {
-   "docs": 438764,
-   "words": 166891411
+   "docs": 422725,
+   "words": 159209728
   }
  },
  "by_split": {
   "train": {
-   "docs": 1536750,
-   "words": 536360738,
-   "files": 30
+   "docs": 1444653,
+   "words": 499553778,
+   "files": 28
   },
   "validation": {
-   "docs": 32022,
-   "words": 12125774,
+   "docs": 30121,
+   "words": 10542693,
    "files": 1
   },
   "test": {
-   "docs": 32215,
-   "words": 11214323,
+   "docs": 30276,
+   "words": 10333477,
    "files": 1
   }
  },
  "by_license": {
   "odc-by-1.0": {
-   "docs": 1162223,
-   "words": 392809424
+   "docs": 1082325,
+   "words": 361220220
   },
   "cc0-1.0": {
-   "docs": 438764,
-   "words": 166891411
+   "docs": 422725,
+   "words": 159209728
   }
  },
  "exact_dup_by_source": {
   "fineweb2": 5,
   "finepdfs": 1,
-  "madlad400": 6,
-  "hplt2": 375323
+  "madlad400": 509,
+  "hplt2": 375423
  },
  "near_dup_by_source": {
-  "fineweb2": 105644,
-  "finepdfs": 198,
-  "madlad400": 10354,
-  "hplt2": 120502
+  "fineweb2": 175002,
+  "finepdfs": 229,
+  "madlad400": 20367,
+  "hplt2": 136441
  }
 }
