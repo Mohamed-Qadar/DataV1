@@ -11,10 +11,10 @@ import pyarrow.parquet as pq
 
 REPO, WORK = sys.argv[1], sys.argv[2]
 FINAL = os.path.join(REPO, "final", "v1.0")
-LICENSES = {"cc0-1.0", "odc-by-1.0", "cc-by-4.0"}
+LICENSES = {"cc0-1.0", "odc-by-1.0", "cc-by-4.0", "apache-2.0"}
 TEMPLATE_TOKENS = ("<|im_start|>", "<|im_end|>", "<|endoftext|>", "[INST]", "[/INST]", "<s>", "</s>",
                    "<|user|>", "<|assistant|>", "<|system|>")
-report = {"translation": {}, "raw_text": {}, "errors": []}
+report = {"translation": {}, "qa": {}, "raw_text": {}, "errors": []}
 
 
 def err(msg):
@@ -54,6 +54,44 @@ for name in ("train", "validation", "test"):
             bad += 1
             err(f"{name}.jsonl line {i+1}: {e}")
     report["translation"][name] = {"records": n, "invalid": bad}
+
+# question-answer set (training files + the held-back review file)
+ids = set()
+for name in ("train", "validation", "test", "needs_review"):
+    path = os.path.join(FINAL, "qa", f"{name}.jsonl")
+    raw = open(path, "rb").read()
+    if raw.startswith(b"\xef\xbb\xbf"):
+        err(f"{path}: BOM found")
+    n = bad = 0
+    fields = {"id", "messages", "source", "category", "language", "license"}
+    if name == "needs_review":
+        fields = fields | {"review_reason"}
+    for i, ln in enumerate(raw.decode("utf-8").split("\n")):
+        if not ln:
+            continue
+        n += 1
+        try:
+            r = json.loads(ln)
+            assert set(r) == fields, "fields"
+            assert isinstance(r["id"], str) and r["id"] not in ids, "id"
+            ids.add(r["id"])
+            m = r["messages"]
+            assert isinstance(m, list) and len(m) == 2, "messages length"
+            for j, msg in enumerate(m):
+                assert set(msg) == {"role", "content"}, "message keys"
+                assert msg["role"] == ("user" if j == 0 else "assistant"), "role order"
+                assert isinstance(msg["content"], str) and msg["content"].strip(), "empty content"
+                assert not any(t in msg["content"] for t in TEMPLATE_TOKENS), "chat template token"
+                assert "\ufffd" not in msg["content"], "replacement char"
+            assert r["language"] == "so" and r["source"] == "aya" and r["license"] == "apache-2.0", "language/source/license"
+            if name == "needs_review":
+                assert r["category"] in {"qa_religion", "qa_health"} and r["review_reason"] in {"religion", "health"}, "category"
+            else:
+                assert r["category"] == "qa_general", "category"
+        except Exception as e:
+            bad += 1
+            err(f"qa/{name}.jsonl line {i+1}: {e}")
+    report["qa"][name] = {"records": n, "invalid": bad}
 
 ids = set()
 for name in ("train", "validation", "test"):

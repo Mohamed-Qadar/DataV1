@@ -12,6 +12,7 @@ s1 = json.load(open(os.path.join(WORK, "stage1_stats.json")))
 s2 = json.load(open(os.path.join(WORK, "stage2_stats.json")))
 par = json.load(open(os.path.join(WORK, "parallel_stats.json")))
 val = json.load(open(os.path.join(WORK, "validation_report.json")))
+qa = json.load(open(os.path.join(WORK, "qa_stats.json")))
 tok = json.load(open(os.path.join(WORK, "token_ratio.json"))) if os.path.exists(os.path.join(WORK, "token_ratio.json")) else None
 NAMES = {"fineweb2": "FineWeb-2 (som_Latn)", "hplt2": "HPLT v2 cleaned (som_Latn)",
          "madlad400": "MADLAD-400 v1.5 clean (so)", "finepdfs": "FinePDFs (som_Latn)",
@@ -34,8 +35,9 @@ def du(path):
 L = []
 A = L.append
 A("# DATACARD — Somali AI dataset v1.0\n")
-A("Built 2026-11-15. Training-ready Somali data in two sets: raw text for language training and "
-  "translation instructions for instruction training. Every record carries its source and licence.\n")
+A("Built 2026-11-15. Training-ready Somali data in three sets: raw text for language training, and "
+  "translation instructions and question-answer pairs for instruction training. Every record carries "
+  "its source and licence. Where each source comes from is declared in the repository README.\n")
 A("## 1. What is in this version\n")
 A("| Set | Format | Records | Words | Files | Size |")
 A("|---|---|---:|---:|---:|---:|")
@@ -45,17 +47,20 @@ tr_size = du(os.path.join(REPO, "final/v1.0/translation/*.jsonl"))
 A(f"| `raw_text/` | Parquet (`id`, `text`, `source`, `license`) | {n(s2['out'])} | {n(rw)} | "
   f"{sum(v['files'] for v in s2['by_split'].values())} | {rt_size/1e9:.2f} GB |")
 sel = par["_selected"]
-A(f"| `translation/` | JSONL chat `messages` | {n(sel['total'])} | — | 3 | {tr_size/1e6:.1f} MB |\n")
+A(f"| `translation/` | JSONL chat `messages` | {n(sel['total'])} | — | 3 | {tr_size/1e6:.1f} MB |")
+qa_size = du(os.path.join(REPO, "final/v1.0/qa/*.jsonl"))
+A(f"| `qa/` | JSONL chat `messages` | {n(qa['final_training_ready'])} training-ready "
+  f"(+ {n(sum(qa['needs_review'].values()))} held for review) | — | 4 | {qa_size/1e6:.1f} MB |\n")
 if tok:
     A(f"Token estimate for `raw_text/`: about {n(int(rw * tok['tokens_per_word']))} tokens with the "
       f"`{tok['tokenizer']}` tokenizer ({tok['tokens_per_word']:.2f} tokens per word, measured on "
       f"{n(tok['docs'])} random documents).\n")
 A("### Splits (96% / 2% / 2%, assigned by a hash of the record id)\n")
-A("| Split | Raw text docs | Raw text words | Raw text files | Translation records |")
-A("|---|---:|---:|---:|---:|")
+A("| Split | Raw text docs | Raw text words | Raw text files | Translation records | QA records |")
+A("|---|---:|---:|---:|---:|---:|")
 for sp in ("train", "validation", "test"):
     b = s2["by_split"][sp]
-    A(f"| {sp} | {n(b['docs'])} | {n(b['words'])} | {b['files']} | {n(sel['by_split'].get(sp, 0))} |")
+    A(f"| {sp} | {n(b['docs'])} | {n(b['words'])} | {b['files']} | {n(sel['by_split'].get(sp, 0))} | {n(qa['by_split'].get(sp, 0))} |")
 A("")
 A("## 2. Raw text: what each cleaning step removed\n")
 A("| Step | " + " | ".join(NAMES[s] for s in ORDER) + " | Total |")
@@ -133,7 +138,38 @@ A("2. **Not half/half by direction.** Many NLLB Somali sentences are machine-tra
 A(f"NLLB reserve: {n(par['nllb'].get('not_scored_reserve', 0))} pairs passed the cheap filters but were not "
   "scored with LaBSE in this build (CPU-only run, about 90 minutes for 102,063 pairs). At the observed pass "
   "rate they would yield well over 100,000 more Somali→English pairs.\n")
-A("## 4. Validation\n")
+A("## 4. Question-answer set\n")
+A("Source: the Somali rows of the Aya Dataset (Cohere Labs community, Apache-2.0), written by "
+  f"{qa['annotators']} volunteer annotators. It is the only human-written Somali question-answer source found "
+  "with a licence that allows commercial use. Machine-translated and synthetic sets were inspected and left out "
+  "(see `licenses/SOURCES.md`).\n")
+A("| Step | Rows |")
+A("|---|---:|")
+qrows = [("Somali rows in Aya (original + re-annotated)", "in_somali_rows"), ("Removed: empty", "rm_empty"),
+         ("Removed: prompt is not a question (titles, essays, poems, song lyrics)", "rm_not_a_question"),
+         ("Removed: repeated question (other versions of the same question)", "rm_duplicate_question"),
+         ("Unique questions", "unique_questions"),
+         ("Removed: versions of the answer disagree", "rm_conflicting_answers"),
+         ("Removed: answer over 200 words (pasted articles)", "rm_long_answer"),
+         ("Removed: URL in text", "rm_url"),
+         ("Removed: Every Word Capitalised style", "rm_title_case_answer"),
+         ("Removed: all capitals", "rm_all_caps"),
+         ("Removed: question not Somali", "rm_question_not_somali"),
+         ("Removed: answer not Somali", "rm_answer_not_somali"),
+         ("Removed: poor spelling (over 15% of words unknown to the clean corpus)", "rm_poor_spelling"),
+         ("Removed: test-set text", "rm_test_leak")]
+for label, key in qrows:
+    if qa.get(key):
+        A(f"| {label} | {n(qa[key])} |")
+A(f"| Held for expert review: religion (`needs_review.jsonl`) | {n(qa['needs_review'].get('religion', 0))} |")
+A(f"| Held for expert review: health (`needs_review.jsonl`) | {n(qa['needs_review'].get('health', 0))} |")
+A(f"| **Training-ready (`train` / `validation` / `test`)** | **{n(qa['final_training_ready'])}** |\n")
+A(f"Median answer length: {qa['answer_words_median']} words. The spelling check compares each pair with a vocabulary of "
+  f"{n(qa['spelling_vocabulary_words'])} words seen at least five times in about 100 million words of the cleaned raw text.\n")
+A("Religion and health questions are detected by keyword and kept out of the training files. Those answers "
+  "need a scholar or a clinician before a model learns from them. The keyword match is not perfect: some such "
+  "questions remain in the training files, and some general questions are in the review file.\n")
+A("## 5. Validation\n")
 A("| Set | Split | Records | Invalid | Largest file |")
 A("|---|---|---:|---:|---:|")
 for sp in ("train", "validation", "test"):
@@ -142,10 +178,13 @@ for sp in ("train", "validation", "test"):
 for sp in ("train", "validation", "test"):
     v = val["translation"][sp]
     A(f"| translation | {sp} | {n(v['records'])} | {v['invalid']} | — |")
+for sp in ("train", "validation", "test", "needs_review"):
+    v = val["qa"][sp]
+    A(f"| qa | {sp} | {n(v['records'])} | {v['invalid']} | — |")
 A("")
 A("Checks: UTF-8 without BOM, required fields, unique ids, user/assistant order, no empty content, "
   "no chat-template tokens, allowed licences, no document under 50 words.\n")
-A("## 5. Known limitations\n")
+A("## 6. Known limitations\n")
 A("1. Not included pending a licence decision: SomaliWeb v1 (CC-BY-SA, partly CC100) and Somali Wikipedia (CC-BY-SA).")
 A("2. Dataset licences cover the compilations, not the rights in the original web pages. Get legal review before commercial training.")
 A("3. PII masking is regex only (e-mails, phone numbers). Names and addresses are not masked.")
@@ -155,7 +194,9 @@ A("5b. Af-Maay text is removed by the language filter (it is identified as a dif
 A("6. NLLB pairs are automatically mined. LaBSE removes most mismatches but not all, and their Somali side is often machine-translated; they appear only as Somali→English examples. Review a sample before relying on them.")
 A("7. The Somali instruction templates in the translation set were written by an AI model and should be checked by a native-speaker editor.")
 A("8. The test-leakage guard used Belebele (FLORES-200 passages). FLORES+ itself is gated and was not downloaded; repeat the check once it is in `test_quarantine/`.")
-A("9. This version has no question–answer or chat data. That is the next step.")
+A("9. The question-answer set is small and unedited. Answers were written by volunteers and have not been "
+  "fact-checked; spelling and phrasing are uneven even after filtering. An editor should read it before training.")
+A("9b. There is no multi-turn chat data yet, and the instruction data is far below the 100,000-example goal.")
 A("10. Quality was measured on samples and by automatic filters; no human editor has reviewed this version.\n")
 open(os.path.join(REPO, "final", "v1.0", "DATACARD.md"), "w", encoding="utf-8").write("\n".join(L))
 print("\n".join(L))

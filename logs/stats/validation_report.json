@@ -13,6 +13,24 @@
    "invalid": 0
   }
  },
+ "qa": {
+  "train": {
+   "records": 1067,
+   "invalid": 0
+  },
+  "validation": {
+   "records": 22,
+   "invalid": 0
+  },
+  "test": {
+   "records": 26,
+   "invalid": 0
+  },
+  "needs_review": {
+   "records": 1036,
+   "invalid": 0
+  }
+ },
  "raw_text": {
   "train": {
    "files": 28,

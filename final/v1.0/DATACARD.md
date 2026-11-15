@@ -1,6 +1,6 @@
 # DATACARD — Somali AI dataset v1.0
 
-Built 2026-11-15. Training-ready Somali data in two sets: raw text for language training and translation instructions for instruction training. Every record carries its source and licence.
+Built 2026-11-15. Training-ready Somali data in three sets: raw text for language training, and translation instructions and question-answer pairs for instruction training. Every record carries its source and licence. Where each source comes from is declared in the repository README.
 
 ## 1. What is in this version
 
@@ -8,16 +8,17 @@ Built 2026-11-15. Training-ready Somali data in two sets: raw text for language 
 |---|---|---:|---:|---:|---:|
 | `raw_text/` | Parquet (`id`, `text`, `source`, `license`) | 1,505,050 | 520,429,948 | 30 | 1.09 GB |
 | `translation/` | JSONL chat `messages` | 50,000 | — | 3 | 23.9 MB |
+| `qa/` | JSONL chat `messages` | 1,115 training-ready (+ 1,036 held for review) | — | 4 | 1.0 MB |
 
 Token estimate for `raw_text/`: about 1,363,459,117 tokens with the `Qwen/Qwen3-8B` tokenizer (2.62 tokens per word, measured on 2,000 random documents).
 
 ### Splits (96% / 2% / 2%, assigned by a hash of the record id)
 
-| Split | Raw text docs | Raw text words | Raw text files | Translation records |
-|---|---:|---:|---:|---:|
-| train | 1,444,653 | 499,553,778 | 28 | 47,979 |
-| validation | 30,121 | 10,542,693 | 1 | 1,014 |
-| test | 30,276 | 10,333,477 | 1 | 1,007 |
+| Split | Raw text docs | Raw text words | Raw text files | Translation records | QA records |
+|---|---:|---:|---:|---:|---:|
+| train | 1,444,653 | 499,553,778 | 28 | 47,979 | 1,067 |
+| validation | 30,121 | 10,542,693 | 1 | 1,014 | 22 |
+| test | 30,276 | 10,333,477 | 1 | 1,007 | 26 |
 
 ## 2. Raw text: what each cleaning step removed
 
@@ -88,7 +89,34 @@ Two decisions that differ from the original plan, both made to protect answer qu
 
 NLLB reserve: 392,206 pairs passed the cheap filters but were not scored with LaBSE in this build (CPU-only run, about 90 minutes for 102,063 pairs). At the observed pass rate they would yield well over 100,000 more Somali→English pairs.
 
-## 4. Validation
+## 4. Question-answer set
+
+Source: the Somali rows of the Aya Dataset (Cohere Labs community, Apache-2.0), written by 77 volunteer annotators. It is the only human-written Somali question-answer source found with a licence that allows commercial use. Machine-translated and synthetic sets were inspected and left out (see `licenses/SOURCES.md`).
+
+| Step | Rows |
+|---|---:|
+| Somali rows in Aya (original + re-annotated) | 7,704 |
+| Removed: empty | 5 |
+| Removed: prompt is not a question (titles, essays, poems, song lyrics) | 1,276 |
+| Removed: repeated question (other versions of the same question) | 2,728 |
+| Unique questions | 3,695 |
+| Removed: versions of the answer disagree | 204 |
+| Removed: answer over 200 words (pasted articles) | 515 |
+| Removed: URL in text | 6 |
+| Removed: Every Word Capitalised style | 465 |
+| Removed: all capitals | 14 |
+| Removed: question not Somali | 27 |
+| Removed: answer not Somali | 70 |
+| Removed: poor spelling (over 15% of words unknown to the clean corpus) | 243 |
+| Held for expert review: religion (`needs_review.jsonl`) | 883 |
+| Held for expert review: health (`needs_review.jsonl`) | 153 |
+| **Training-ready (`train` / `validation` / `test`)** | **1,115** |
+
+Median answer length: 9 words. The spelling check compares each pair with a vocabulary of 312,710 words seen at least five times in about 100 million words of the cleaned raw text.
+
+Religion and health questions are detected by keyword and kept out of the training files. Those answers need a scholar or a clinician before a model learns from them. The keyword match is not perfect: some such questions remain in the training files, and some general questions are in the review file.
+
+## 5. Validation
 
 | Set | Split | Records | Invalid | Largest file |
 |---|---|---:|---:|---:|
@@ -98,10 +126,14 @@ NLLB reserve: 392,206 pairs passed the cheap filters but were not scored with La
 | translation | train | 47,979 | 0 | — |
 | translation | validation | 1,014 | 0 | — |
 | translation | test | 1,007 | 0 | — |
+| qa | train | 1,067 | 0 | — |
+| qa | validation | 22 | 0 | — |
+| qa | test | 26 | 0 | — |
+| qa | needs_review | 1,036 | 0 | — |
 
 Checks: UTF-8 without BOM, required fields, unique ids, user/assistant order, no empty content, no chat-template tokens, allowed licences, no document under 50 words.
 
-## 5. Known limitations
+## 6. Known limitations
 
 1. Not included pending a licence decision: SomaliWeb v1 (CC-BY-SA, partly CC100) and Somali Wikipedia (CC-BY-SA).
 2. Dataset licences cover the compilations, not the rights in the original web pages. Get legal review before commercial training.
@@ -112,5 +144,6 @@ Checks: UTF-8 without BOM, required fields, unique ids, user/assistant order, no
 6. NLLB pairs are automatically mined. LaBSE removes most mismatches but not all, and their Somali side is often machine-translated; they appear only as Somali→English examples. Review a sample before relying on them.
 7. The Somali instruction templates in the translation set were written by an AI model and should be checked by a native-speaker editor.
 8. The test-leakage guard used Belebele (FLORES-200 passages). FLORES+ itself is gated and was not downloaded; repeat the check once it is in `test_quarantine/`.
-9. This version has no question–answer or chat data. That is the next step.
+9. The question-answer set is small and unedited. Answers were written by volunteers and have not been fact-checked; spelling and phrasing are uneven even after filtering. An editor should read it before training.
+9b. There is no multi-turn chat data yet, and the instruction data is far below the 100,000-example goal.
 10. Quality was measured on samples and by automatic filters; no human editor has reviewed this version.

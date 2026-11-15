@@ -22,6 +22,7 @@ def get(repo, files, sub):
 
 get("HuggingFaceFW/finepdfs", ["data/som_Latn/train/000_00000.parquet"], "finepdfs")
 get("Helsinki-NLP/opus_infopankki", ["en-so/train-00000-of-00001.parquet"], "infopankki")
+get("CohereLabs/aya_dataset", ["data/train-00000-of-00001.parquet"], "aya")   # Somali rows are filtered later
 get("google/smol", ["smolsent/en_so.jsonl", "smoldoc/en_so.jsonl"], "smol")
 get("HuggingFaceFW/fineweb-2", ["data/som_Latn/train/000_00000.parquet"], "fineweb2")
 clean = sorted(i.path for i in api.list_repo_tree("allenai/MADLAD-400", path_in_repo="data-v1p5/so",
